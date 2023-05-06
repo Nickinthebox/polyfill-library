@@ -126,12 +126,12 @@ it('Parameter Mutation', function () {
 	proclaim.equal(url.search, '?a=1&b=2&a=3');
 	proclaim.equal(url.href, 'http://example.com/?a=1&b=2&a=3');
 
-	url.searchParams['delete']('a');
+	url.searchParams.delete('a');
 	proclaim.equal(url.search, '?b=2');
 	proclaim.deepEqual(url.searchParams.getAll('a'), []);
 	proclaim.equal(url.href, 'http://example.com/?b=2');
 
-	url.searchParams['delete']('b');
+	url.searchParams.delete('b');
 	proclaim.deepEqual(url.searchParams.getAll('b'), []);
 	proclaim.equal(url.href, 'http://example.com/');
 
@@ -239,11 +239,11 @@ it('URLSearchParams mutation', function () {
 	proclaim.deepEqual(p.getAll('a'), ['1', '3']);
 	proclaim.equal(String(p), 'a=1&b=2&a=3');
 
-	p['delete']('a');
+	p.delete('a');
 	proclaim.equal(String(p), 'b=2');
 	proclaim.deepEqual(p.getAll('a'), []);
 
-	p['delete']('b');
+	p.delete('b');
 	proclaim.deepEqual(p.getAll('b'), []);
 
 	p = new URLSearchParams('m=9&n=3');
@@ -414,7 +414,7 @@ describe('WPT tests', function () {
 	it.skip('throws with DOMException as argument', function() {
 		var params = new URLSearchParams(DOMException);
 		proclaim.equal(params.toString(), "INDEX_SIZE_ERR=1&DOMSTRING_SIZE_ERR=2&HIERARCHY_REQUEST_ERR=3&WRONG_DOCUMENT_ERR=4&INVALID_CHARACTER_ERR=5&NO_DATA_ALLOWED_ERR=6&NO_MODIFICATION_ALLOWED_ERR=7&NOT_FOUND_ERR=8&NOT_SUPPORTED_ERR=9&INUSE_ATTRIBUTE_ERR=10&INVALID_STATE_ERR=11&SYNTAX_ERR=12&INVALID_MODIFICATION_ERR=13&NAMESPACE_ERR=14&INVALID_ACCESS_ERR=15&VALIDATION_ERR=16&TYPE_MISMATCH_ERR=17&SECURITY_ERR=18&NETWORK_ERR=19&ABORT_ERR=20&URL_MISMATCH_ERR=21&QUOTA_EXCEEDED_ERR=22&TIMEOUT_ERR=23&INVALID_NODE_TYPE_ERR=24&DATA_CLONE_ERR=25")
-		proclaim["throws"](function() { new URLSearchParams(DOMException.prototype) },
+		proclaim.throws(function() { new URLSearchParams(DOMException.prototype) },
 			"Constructing a URLSearchParams from DOMException.prototype should throw due to branding checks"
 		);
 	})
@@ -590,11 +590,51 @@ describe('WPT tests', function () {
 		proclaim.equal(params.get("a"), "b");
 		proclaim.equal(params.get("c"), "d");
 
-		proclaim["throws"](function() { new URLSearchParams([[1]]); });
-		proclaim["throws"](function() { new URLSearchParams([[1,2,3]]); });
+		proclaim.throws(function() { new URLSearchParams([[1]]); });
+		proclaim.throws(function() { new URLSearchParams([[1,2,3]]); });
 	});
 
+	/* eslint-disable quote-props */
 	[
+		// Cases from WPT: urlencoded-parser
+		// https://github.com/web-platform-tests/wpt/blob/5f5ec4cff4/url/urlencoded-parser.any.js
+		{ "input": "test", "output": [["test", ""]] },
+		{ "input": "\uFEFFtest=\uFEFF", "output": [["\uFEFFtest", "\uFEFF"]] },
+		{ "input": "%EF%BB%BFtest=%EF%BB%BF", "output": [["\uFEFFtest", "\uFEFF"]] },
+		{ "input": "%FE%FF", "output": [["\uFFFD\uFFFD", ""]] },
+		{ "input": "%FF%FE", "output": [["\uFFFD\uFFFD", ""]] },
+		{ "input": "†&†=x", "output": [["†", ""], ["†", "x"]] },
+		{ "input": "%C2", "output": [["\uFFFD", ""]] },
+		{ "input": "%C2x", "output": [["\uFFFDx", ""]] },
+		{ "input": "_charset_=windows-1252&test=%C2x", "output": [["_charset_", "windows-1252"], ["test", "\uFFFDx"]] },
+		{ "input": '', "output": [] },
+		{ "input": 'a', "output": [['a', '']] },
+		{ "input": 'a=b', "output": [['a', 'b']] },
+		{ "input": 'a=', "output": [['a', '']] },
+		{ "input": '=b', "output": [['', 'b']] },
+		{ "input": '&', "output": [] },
+		{ "input": '&a', "output": [['a', '']] },
+		{ "input": 'a&', "output": [['a', '']] },
+		{ "input": 'a&a', "output": [['a', ''], ['a', '']] },
+		{ "input": 'a&b&c', "output": [['a', ''], ['b', ''], ['c', '']] },
+		{ "input": 'a=b&c=d', "output": [['a', 'b'], ['c', 'd']] },
+		{ "input": 'a=b&c=d&', "output": [['a', 'b'], ['c', 'd']] },
+		{ "input": '&&&a=b&&&&c=d&', "output": [['a', 'b'], ['c', 'd']] },
+		{ "input": 'a=a&a=b&a=c', "output": [['a', 'a'], ['a', 'b'], ['a', 'c']] },
+		{ "input": 'a==a', "output": [['a', '=a']] },
+		{ "input": 'a=a+b+c+d', "output": [['a', 'a b c d']] },
+		{ "input": '%=a', "output": [['%', 'a']] },
+		{ "input": '%a=a', "output": [['%a', 'a']] },
+		{ "input": '%a_=a', "output": [['%a_', 'a']] },
+		{ "input": '%61=a', "output": [['a', 'a']] },
+		{ "input": '%61+%4d%4D=', "output": [['a MM', '']] },
+		{ "input": "id=0&value=%", "output": [['id', '0'], ['value', '%']] },
+		{ "input": "b=%2sf%2a", "output": [['b', '%2sf*']]},
+		{ "input": "b=%2%2af%2a", "output": [['b', '%2*f*']]},
+		{ "input": "b=%%2a", "output": [['b', '%*']]},
+
+		// Cases from WPT: urlencoded-sort
+		// https://github.com/web-platform-tests/wpt/blob/5f5ec4cff4/url/urlsearchparams-sort.any.js
 		{
 			input: "z=b&a=b&z=a&a=a",
 			output: [["a", "b"], ["a", "a"], ["z", "b"], ["z", "a"]]
@@ -628,6 +668,7 @@ describe('WPT tests', function () {
 			input: "a🌈&a💩",
 			output: [["a🌈", ""], ["a💩", ""]]
 		}
+		/* eslint-enable */
 	].forEach(function(val) {
 		it( "parses and sorts: " + val.input, function() {
 			var params = new URLSearchParams(val.input);

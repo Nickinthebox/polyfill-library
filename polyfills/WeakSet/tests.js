@@ -1,5 +1,5 @@
 
-/* globals proclaim, WeakSet */
+/* globals proclaim, WeakSet, Symbol */
 
 it('is a function', function () {
 	proclaim.isFunction(WeakSet);
@@ -38,7 +38,7 @@ it('should be instantiable', function(){
 
 it('has add, delete and has methods', function(){
 	proclaim.notEqual(WeakSet.prototype.add, undefined);
-	proclaim.notEqual(WeakSet.prototype['delete'], undefined);
+	proclaim.notEqual(WeakSet.prototype.delete, undefined);
 	proclaim.notEqual(WeakSet.prototype.has, undefined);
 });
 
@@ -57,10 +57,10 @@ it('should perform as expected', function() {
 	proclaim.equal(set.has(d), true);
 	proclaim.equal(set.has(e), false);
 
-	proclaim.equal(set['delete'](b), true);
-	proclaim.equal(set['delete'](c), true);
-	proclaim.equal(set['delete'](d), true);
-	proclaim.equal(set['delete'](e), false);
+	proclaim.equal(set.delete(b), true);
+	proclaim.equal(set.delete(c), true);
+	proclaim.equal(set.delete(d), true);
+	proclaim.equal(set.delete(e), false);
 
 	proclaim.equal(set.has(a), true);
 	proclaim.equal(set.has(b), false);
@@ -90,4 +90,8 @@ it('should be possible to prepopulate the set', function() {
 	proclaim.equal(ws.has({}), false);
 	proclaim.equal(ws.has(o1), true);
 	proclaim.equal(ws.has(window), true);
+});
+
+it('WeakSet.prototype[Symbol.toStringTag]', function () {
+	proclaim.strictEqual(WeakSet.prototype[Symbol.toStringTag], 'WeakSet');
 });

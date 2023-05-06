@@ -13,7 +13,7 @@
 var supportedNatively = 'IntersectionObserver' in window &&
 'IntersectionObserverEntry' in window &&
 'intersectionRatio' in window.IntersectionObserverEntry.prototype;
-	
+
 if (supportedNatively) {
 	return;
 }
@@ -61,6 +61,7 @@ function IntersectionObserverEntry(entry) {
 	}
 }
 
+IntersectionObserverEntry.prototype.intersectionRatio = 0;
 
 /**
  * Creates the global IntersectionObserver constructor.
@@ -418,6 +419,8 @@ IntersectionObserver.prototype._getRootRect = function() {
 		var html = document.documentElement;
 		var body = document.body;
 		rootRect = {
+			x: 0,
+			y: 0,
 			top: 0,
 			left: 0,
 			right: html.clientWidth || body.clientWidth,
@@ -449,6 +452,8 @@ IntersectionObserver.prototype._expandRectByRootMargin = function(rect) {
 	};
 	newRect.width = newRect.right - newRect.left;
 	newRect.height = newRect.bottom - newRect.top;
+	newRect.x = newRect.left;
+	newRect.y = newRect.top;
 
 	return newRect;
 };
@@ -616,6 +621,8 @@ function computeRectIntersection(rect1, rect2) {
 	var height = bottom - top;
 
 	return (width >= 0 && height >= 0) && {
+		x: left,
+		y: top,
 		top: top,
 		bottom: bottom,
 		left: left,
@@ -644,8 +651,10 @@ function getBoundingClientRect(el) {
 	if (!rect) return getEmptyRect();
 
 	// Older IE
-	if (!(rect.width && rect.height)) {
+	if (!(rect.width && rect.height && rect.x && rect.y)) {
 		rect = {
+			x: rect.left,
+			y: rect.top,
 			top: rect.top,
 			right: rect.right,
 			bottom: rect.bottom,
@@ -665,6 +674,8 @@ function getBoundingClientRect(el) {
  */
 function getEmptyRect() {
 	return {
+		x: 0,
+		y: 0,
 		top: 0,
 		bottom: 0,
 		left: 0,

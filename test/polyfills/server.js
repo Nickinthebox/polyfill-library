@@ -61,6 +61,9 @@ const cacheFor1Day = cache("1 day", () => true, {
 
 app.get(["/test"], createEndpoint(runnerTemplate));
 app.get(["/iframe.html"], createEndpoint(testIframeTemplate));
+app.get(["/empty-document.html"], cacheFor1Day, (request, response) => {
+	response.sendFile(path.resolve(__dirname, "./empty-document.html"));
+});
 app.get(["/"], createEndpoint(directorTemplate));
 app.get("/mocha.js", cacheFor1Day,(request, response) => {
 	response.sendFile(require.resolve("mocha/mocha.js"));
@@ -76,8 +79,6 @@ app.get(
 	"/polyfill.js",
 	cacheFor1Day,
 	async (request, response) => {
-		const ua = request.get("User-Agent");
-		const isIE8 = polyfillio.normalizeUserAgent(ua) === "ie/8.0.0";
 		const polyfillCombinations = (request.query.polyfillCombinations || "no") === "yes";
 		const feature = request.query.feature || "";
 		const includePolyfills = request.query.includePolyfills || "no";
@@ -90,7 +91,7 @@ app.get(
 		response.set(headers);
 
 		if (includePolyfills === "yes") {
-			const polyfillsWithTests = await testablePolyfills(isIE8);
+			const polyfillsWithTests = await testablePolyfills();
 			let features = polyfillsWithTests.map(polyfill => polyfill.feature);
 
 			// Exclude polyfills which must not be loaded together
@@ -124,8 +125,6 @@ app.get(
 	"/tests.js",
 	cacheFor1Day,
 	async (request, response) => {
-		const ua = request.get("User-Agent");
-		const isIE8 = polyfillio.normalizeUserAgent(ua) === "ie/8.0.0";
 		const feature = request.query.feature;
 		const requestedFeature = request.query.feature !== undefined;
 
@@ -135,7 +134,7 @@ app.get(
 		response.status(200);
 		response.set(headers);
 
-		const polyfills = await testablePolyfills(isIE8);
+		const polyfills = await testablePolyfills();
 
 		// Filter for querystring args
 		const features = requestedFeature
@@ -161,9 +160,9 @@ app.get(
 app.listen(port, () => console.log(`Test server listening on port ${port}!`));
 
 const testablePolyfillsCache = {};
-async function testablePolyfills(isIE8, ua) {
-	if (testablePolyfillsCache[`isIE8:${isIE8};ua:${ua}`]) {
-		return testablePolyfillsCache[`isIE8:${isIE8};ua:${ua}`];
+async function testablePolyfills(ua) {
+	if (testablePolyfillsCache[`ua:${ua}`]) {
+		return testablePolyfillsCache[`ua:${ua}`];
 	}
 
 	const polyfills = await polyfillio.listAllPolyfills();
@@ -171,18 +170,13 @@ async function testablePolyfills(isIE8, ua) {
 
 	for (const polyfill of polyfills) {
 		const config = await polyfillio.describePolyfill(polyfill);
-		if (config && config.isTestable && config.isPublic && config.hasTests) {
-			if (isIE8 && !semver.satisfies("8.0.0", config.browsers.ie)) {
+		if (config && config.isTestable && config.isPublic && config.hasTests && ua) {
+			const [family, version] = ua.split('/');
+			if (config.browsers[family] && !semver.satisfies(version, config.browsers[family])){
 				continue;
 			}
-			if (ua) {
-				const [family, version] = ua.split('/');
-				if (config.browsers[family] && !semver.satisfies(version, config.browsers[family])){
-					continue;
-				}
-				if (!config.browsers[family]) {
-					continue;
-				}
+			if (!config.browsers[family]) {
+				continue;
 			}
 		}
 		if (config && config.isTestable && config.isPublic && config.hasTests) {
@@ -218,14 +212,13 @@ async function testablePolyfills(isIE8, ua) {
 		return a.feature > b.feature ? -1 : 1;
 	});
 
-	testablePolyfillsCache[`isIE8:${isIE8};ua:${ua}`] = polyfilldata;
+	testablePolyfillsCache[`ua:${ua}`] = polyfilldata;
 	return polyfilldata;
 }
 
 function createEndpoint(template) {
 	return async (request, response) => {
 		const ua = request.get("User-Agent");
-		const isIE8 = polyfillio.normalizeUserAgent(ua) === "ie/8.0.0";
 		const featuresArgument = (request.query.feature || "").split(',').filter((feature) => !!feature);
 		const includePolyfills = request.query.includePolyfills || "no";
 		const polyfillCombinations = request.query.polyfillCombinations || "no";
@@ -249,9 +242,9 @@ function createEndpoint(template) {
 		}
 		let polyfills;
 		if (includePolyfills === 'yes' && always === 'no') {
-			polyfills = await testablePolyfills(isIE8, polyfillio.normalizeUserAgent(ua));
+			polyfills = await testablePolyfills(polyfillio.normalizeUserAgent(ua));
 		} else {
-			polyfills = await testablePolyfills(isIE8);
+			polyfills = await testablePolyfills();
 		}
 
 		// Filter for querystring args
@@ -262,7 +255,7 @@ function createEndpoint(template) {
 			: polyfills;
 
 		// Make sure we always test something.
-		// This catches edge cases were a run is requested for a polyfill that isn't requested for the current UA.
+		// This catches edge cases were a run is requested for a polyfill that isn't required for the current UA.
 		if (features.length === 0) {
 			features = polyfills;
 		}
@@ -282,6 +275,7 @@ function createEndpoint(template) {
 				requestedFeature: features.length > 0,
 				features: features.map(f => f.feature).join(','),
 				includePolyfills: includePolyfills,
+				requestedPolyfillCombinations: polyfillCombinations === 'yes',
 				polyfillCombinations: polyfillCombinations,
 				always: always,
 				afterTestSuite: `

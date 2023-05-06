@@ -3,7 +3,6 @@ aliases = []
 
 #### Dependencies
 dependencies = [
-	"Object.defineProperty",
 	"Object.getOwnPropertyDescriptor"
 ]
 
@@ -19,22 +18,21 @@ license = "MIT"
 #### Notes
 notes = [
 	"Safari older than 10.1 does not allow re-defining 'HTMLInputElement.prototype.valueAsDate'.",
-	"IE8 doesn't have 'setter' support, so we can't serve this polyfill",
 	"Browsers that do not support date|month|week|time also won't have type property support. This implies we have to look at the attribute of the element. Setting the property without updating the attribute will have unexpected behaviour."
 ]
 
 #### Browser compatibility
 [browsers]
-android = "<43"
+android = "*"
 bb = "*"
 chrome = "<43"
 firefox = "*"
-ios_chr = "<4"
-ios_saf = "<4"
-ie = "9 - *"
-ie_mob = "9 - *"
-opera = "<12.1"
-op_mini = "<12.1"
-safari = ">=10.1"
 firefox_mob = "*"
-samsung_mob = "<4"
+ie = ">=9"
+ie_mob = ">=9"
+opera = "<12.1"
+op_mob = "<12.1"
+op_mini = "*"
+safari = ">=10.1" # Last checked with Safari 15.5 which didn't yet support week and month types.
+ios_saf = "<4.0"
+samsung_mob = "<4.0"

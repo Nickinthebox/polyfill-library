@@ -1,8 +1,5 @@
 dependencies = [
-	"Function.prototype.bind",
 	"Object.assign",
-	"Object.defineProperties",
-	"Object.defineProperty",
 	"Symbol",
 	"Symbol.iterator",
 	"Symbol.toStringTag"
@@ -20,10 +17,9 @@ firefox = "*"
 firefox_mob = "*"
 ie = "*"
 ie_mob = "*"
-ios_chr = "*"
-ios_saf = "*"
-op_mini = "*"
-op_mob = "*"
 opera = "*"
+op_mob = "*"
+op_mini = "*"
 safari = "*"
+ios_saf = "*"
 samsung_mob = "*"

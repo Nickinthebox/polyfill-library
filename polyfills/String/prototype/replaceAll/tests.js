@@ -26,11 +26,11 @@ describe('String.prototype.replaceAll', function () {
 
 	if (supportsStrictModeTests) {
 		it('throws incoercible objects', function () {
-			proclaim["throws"](function () {
+			proclaim.throws(function () {
 				String.prototype.replaceAll.call(undefined);
 			}, TypeError);
 
-			proclaim["throws"](function () {
+			proclaim.throws(function () {
 				String.prototype.replaceAll.call(null);
 			}, TypeError);
 		});
@@ -55,7 +55,7 @@ describe('String.prototype.replaceAll', function () {
 	});
 
 	it("throws a TypeError if searchValue is a regex without a global flag", function() {
-		proclaim["throws"](function() {
+		proclaim.throws(function() {
 			'origami.origami.origami'.replaceAll(/\./, 'fox');
 		}, TypeError);
 	});
@@ -123,22 +123,12 @@ describe('String.prototype.replaceAll', function () {
 				proclaim.deepStrictEqual(result, 'aa z z aa');
 			}
 
-			// IE8 reorders flags when converting a RegExp to string.
-			if ((/./gi).toString() === "/./ig") {
-				searchValue = /./gi;
+			searchValue = /./gi;
 
-				Object.defineProperty(searchValue, self.Symbol.replace, { value: undefined });
+			Object.defineProperty(searchValue, self.Symbol.replace, { value: undefined });
 
-				result = 'aa /./ig /./ig aa'.replaceAll(searchValue, 'z');
-				proclaim.deepStrictEqual(result, 'aa z z aa');
-			} else {
-				searchValue = /./gi;
-
-				Object.defineProperty(searchValue, self.Symbol.replace, { value: undefined });
-
-				result = 'aa /./gi /./gi aa'.replaceAll(searchValue, 'z');
-				proclaim.deepStrictEqual(result, 'aa z z aa');
-			}
+			result = 'aa /./gi /./gi aa'.replaceAll(searchValue, 'z');
+			proclaim.deepStrictEqual(result, 'aa z z aa');
 
 			if (supportsRegexpStickyFlag) {
 				searchValue = new RegExp('\\.', 'igy');

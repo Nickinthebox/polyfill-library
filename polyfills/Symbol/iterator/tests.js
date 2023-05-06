@@ -1,26 +1,12 @@
 /* eslint-env mocha, browser */
 /* global proclaim, Symbol, Set, Map */
 
-var arePropertyDescriptorsSupported = function () {
-	var obj = {};
-	try {
-		Object.defineProperty(obj, 'x', { enumerable: false, value: obj });
-	for (var _ in obj) { return false; }
-		return obj.x === obj;
-	} catch (e) { // this is IE 8.
-		return false;
-	}
-};
-var supportsDescriptors = Object.defineProperty && arePropertyDescriptorsSupported();
-
 it('has the well known symbol iterator as static properties on Symbol', function() {
 	proclaim.notEqual(Symbol.iterator, undefined);
 
-	if (supportsDescriptors) {
-		var iterator = Symbol.iterator;
-		Symbol.iterator = "nope";
-		proclaim.equal(Symbol.iterator, iterator);
-	}
+	var iterator = Symbol.iterator;
+	Symbol.iterator = "nope";
+	proclaim.equal(Symbol.iterator, iterator);
 });
 
 var hasNodeListGlobal = typeof NodeList !== 'undefined' ? it : xit;

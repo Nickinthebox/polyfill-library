@@ -2,28 +2,6 @@
 /* globals proclaim, globalThis */
 
 describe("globalThis", function() {
-	var arePropertyDescriptorsSupported = function() {
-		var obj = {};
-		try {
-			Object.defineProperty(obj, "x", {
-				enumerable: false,
-				value: obj
-			});
-			/* eslint-disable no-unused-vars, no-restricted-syntax */
-			for (var _ in obj) {
-				return false;
-			}
-			/* eslint-enable no-unused-vars, no-restricted-syntax */
-			return obj.x === obj;
-		} catch (e) {
-			// this is IE 8.
-			return false;
-		}
-	};
-
-	var supportsDescriptors =
-		Object.defineProperty && arePropertyDescriptorsSupported();
-
 	it("is an object", function() {
 		proclaim.isObject(globalThis);
 	});
@@ -33,13 +11,13 @@ describe("globalThis", function() {
 	});
 
 	it("is not possible to invoke the global object as a function", function() {
-		proclaim["throws"](function() {
+		proclaim.throws(function() {
 			globalThis();
 		}, TypeError);
 	});
 
 	it("is not possible to use the global object as a constructor  with the new operator", function() {
-		proclaim["throws"](function() {
+		proclaim.throws(function() {
 			new globalThis();
 		}, TypeError);
 	});
@@ -63,24 +41,17 @@ describe("globalThis", function() {
 		);
 	});
 
-	if (supportsDescriptors) {
-		var hasGetOwnPropertyDescriptor =
-			"getOwnPropertyDescriptor" in Object &&
-			typeof Object.getOwnPropertyDescriptor === "function";
-		if (hasGetOwnPropertyDescriptor) {
-			it("has correct descriptors defined", function() {
-				var descriptor = Object.getOwnPropertyDescriptor(
-					globalThis,
-					"globalThis"
-				);
+	it("has correct descriptors defined", function() {
+		var descriptor = Object.getOwnPropertyDescriptor(
+			globalThis,
+			"globalThis"
+		);
 
-				proclaim.isTrue(descriptor.configurable);
-				proclaim.isFalse(descriptor.enumerable);
-				proclaim.isTrue(descriptor.writable);
-				proclaim.doesNotInclude(descriptor, "get");
-				proclaim.doesNotInclude(descriptor, "set");
-				proclaim.isObject(descriptor.value);
-			});
-		}
-	}
+		proclaim.isTrue(descriptor.configurable);
+		proclaim.isFalse(descriptor.enumerable);
+		proclaim.isTrue(descriptor.writable);
+		proclaim.doesNotInclude(descriptor, "get");
+		proclaim.doesNotInclude(descriptor, "set");
+		proclaim.isObject(descriptor.value);
+	});
 });

@@ -30,6 +30,24 @@ describe('Set', function() {
 			}
 		});
 
+		it('has correct descriptors defined for Set.prototype[Symbol.toStringTag]', function () {
+			var descriptor = Object.getOwnPropertyDescriptor(Set.prototype, Symbol.toStringTag);
+
+			proclaim.isTrue(descriptor.configurable);
+			proclaim.isFalse(descriptor.enumerable);
+			proclaim.isFalse(descriptor.writable);
+			proclaim.equal(descriptor.value, 'Set');
+		});
+
+		it('has correct descriptors defined for Set[Symbol.iterator][Symbol.toStringTag]', function () {
+			var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(new Set()[Symbol.iterator]()), Symbol.toStringTag);
+
+			proclaim.isTrue(descriptor.configurable);
+			proclaim.isFalse(descriptor.enumerable);
+			proclaim.isFalse(descriptor.writable);
+			proclaim.equal(descriptor.value, 'Set Iterator');
+		});
+
 		it ("can be pre-populated", function() {
 			var s = new Set([1,2]);
 			proclaim.equal(s.has(1), true);
@@ -48,7 +66,7 @@ describe('Set', function() {
 			proclaim.equal(o.size, 0);
 			o.add("a");
 			proclaim.equal(o.size, 1);
-			o["delete"]("a"); // Use square-bracket syntax to avoid a reserved word in old browsers
+			o.delete("a");
 			proclaim.equal(o.size, 0);
 		});
 
@@ -76,15 +94,15 @@ describe('Set', function() {
 			proclaim.equal(o.has(callback), true);
 			proclaim.equal(o.has(generic), true);
 			proclaim.equal(o.has(o), true);
-			o["delete"](callback);
-			o["delete"](generic);
-			o["delete"](o);
+			o.delete(callback);
+			o.delete(generic);
+			o.delete(o);
 			proclaim.equal(o.has(callback), false);
 			proclaim.equal(o.has(generic), false);
 			proclaim.equal(o.has(o), false);
-			proclaim.equal(o["delete"](o), false);
+			proclaim.equal(o.delete(o), false);
 			o.add(o);
-			proclaim.equal(o["delete"](o), true);
+			proclaim.equal(o.delete(o), true);
 		});
 
 		it("exhibits correct iterator behaviour", function () {
@@ -94,7 +112,7 @@ describe('Set', function() {
 			var values = o.values();
 			var v = values.next();
 			proclaim.equal(v.value, "1");
-			o['delete']("2");
+			o.delete("2");
 			v = values.next();
 			proclaim.equal(v.value, "3");
 			// insertion of previously-removed item goes to the end
@@ -179,7 +197,7 @@ describe('Set', function() {
 				proclaim.equal(value, sameValue);
 				proclaim.equal(obj, o);
 				// even if dropped, keeps looping
-				o["delete"](value);
+				o.delete(value);
 			});
 			proclaim.equal(o.size, 0);
 		});
@@ -189,7 +207,7 @@ describe('Set', function() {
 
 			// Iterator is correct when first item is deleted
 			o = new Set([1, 2, 3]);
-			o["delete"](1);
+			o.delete(1);
 			entries = o.entries();
 			current = entries.next();
 			proclaim.equal(false, current.done);
@@ -203,7 +221,7 @@ describe('Set', function() {
 
 			// Iterator is correct when middle item is deleted
 			o = new Set([1, 2, 3]);
-			o["delete"](2);
+			o.delete(2);
 			entries = o.entries();
 			current = entries.next();
 			proclaim.equal(false, current.done);
@@ -217,7 +235,7 @@ describe('Set', function() {
 
 			// Iterator is correct when last item is deleted
 			o = new Set([1, 2, 3]);
-			o["delete"](3);
+			o.delete(3);
 			entries = o.entries();
 			current = entries.next();
 			proclaim.equal(false, current.done);
@@ -238,8 +256,8 @@ describe('Set', function() {
 				proclaim.equal(value, valueAgain);
 				// mutations work as expected
 				if (value === "1") {
-					o['delete']("0"); // remove from before current index
-					o['delete']("2"); // remove from after current index
+					o.delete("0"); // remove from before current index
+					o.delete("2"); // remove from after current index
 					o.add("3"); // insertion
 				} else if (value === "3") {
 					o.add("0"); // insertion at the end
@@ -258,7 +276,7 @@ describe('Set', function() {
 		});
 
 		it("throws for non-iterable arguments", function() {
-			proclaim["throws"](function() {
+			proclaim.throws(function() {
 				new Set(1);
 			}, TypeError);
 		});

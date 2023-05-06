@@ -6,7 +6,8 @@ notes = [
 ]
 
 [browsers]
-safari = "4 - 9.1"
+firefox = "<18"
+firefox_mob = "<18"
 ie = "6 - 10"
-firefox = "<=17"
+safari = "4.0 - 9.1"
 ios_saf = "<9.3"

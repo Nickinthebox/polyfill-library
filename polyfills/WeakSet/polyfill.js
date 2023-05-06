@@ -55,9 +55,7 @@
 		} catch (e) {
 			// Polyfill.io - For user agents which do not have iteration methods on argument objects or arrays, we can special case those.
 			if (IsArray(iterable) ||
-				Object.prototype.toString.call(iterable) === '[object Arguments]' ||
-				// IE 7 & IE 8 return '[object Object]' for the arguments object, we can detect by checking for the existence of the callee property
-				(!!iterable.callee)) {
+				Object.prototype.toString.call(iterable) === '[object Arguments]') {
 				var index;
 				var length = iterable.length;
 				for (index = 0; index < length; index++) {
@@ -180,6 +178,12 @@
 	// 23.4.3.5. WeakSet.prototype [ @@toStringTag ]
 	// The initial value of the @@toStringTag property is the String value "WeakSet".
 	// This property has the attributes { [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true }.
+	Object.defineProperty(WeakSet.prototype, Symbol.toStringTag, {
+		configurable: true,
+		enumerable: false,
+		writable: false,
+		value: 'WeakSet'
+	});
 
 	// Polyfill.io - Safari 8 implements Set.name but as a non-configurable property, which means it would throw an error if we try and configure it here.
 	if (!('name' in WeakSet)) {
@@ -193,12 +197,5 @@
 	}
 
 	// Export the object
-	try {
-		CreateMethodProperty(global, 'WeakSet', WeakSet);
-	} catch (e) {
-		// IE8 throws an error here if we set enumerable to false.
-		// More info on table 2: https://msdn.microsoft.com/en-us/library/dd229916(v=vs.85).aspx
-		global.WeakSet = WeakSet;
-	}
-
+	CreateMethodProperty(global, 'WeakSet', WeakSet);
 }(self));

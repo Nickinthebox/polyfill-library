@@ -6,11 +6,6 @@ aliases = [
 	"default"
 ]
 dependencies = [
-	"Window",
-	"document",
-	"Element",
-	"Object.defineProperty",
-	"Array.prototype.indexOf",
 	"Array.prototype.includes"
 ]
 docs = "https://developer.mozilla.org/en/docs/Web/API/Event"
@@ -20,8 +15,9 @@ notes = [
 
 [browsers]
 firefox = "6 - 10"
-ie = "6 - 11"
-ie_mob = "10"
-opera = "10 - 11.5"
-safari = "4 - 7"
 firefox_mob = "6 - 10"
+ie = ">=6"
+ie_mob = "<11"
+opera = "10 - 11.5"
+safari = "4.0 - 7.0"
+ios_saf = "3.2 - 7.0"

@@ -10,9 +10,7 @@ describe('on an element', function () {
 	detached = document.createElement('div');
 
 	it('is a function', function () {
-
-		// Asserting using to.be.a('function') in this case causes a hard browser crash in IE6
-		proclaim.isInstanceOf(documentElement.contains, Function);
+		proclaim.isFunction(documentElement.contains);
 	});
 
 	it('functions correctly', function () {
@@ -33,7 +31,7 @@ describe('on an element', function () {
 
 	// Native implementations on Safari (desktop and iOS) as of v9 return false when no argument is supplied
 	it.skip('throws when missing the argument', function () {
-		proclaim["throws"](function () {
+		proclaim.throws(function () {
 			documentElement.contains();
 		});
 	});
@@ -60,7 +58,7 @@ describe('on the document', function () {
 
 	// Native implementations on Safari (desktop and iOS) as of v9 return false when no argument is supplied
 	it.skip('throws when missing the argument', function () {
-		proclaim["throws"](function () {
+		proclaim.throws(function () {
 			document.contains();
 		});
 	});

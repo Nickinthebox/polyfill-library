@@ -6,7 +6,6 @@ dependencies = [
 	"_ESAbstract.RegExpExec",
 	"_ESAbstract.ToLength",
 	"_ESAbstract.ToString",
-	"Object.defineProperty",
 	"Symbol.iterator",
 	"Symbol.toStringTag",
 ]
@@ -22,10 +21,9 @@ firefox = "*"
 firefox_mob = "*"
 ie = "*"
 ie_mob = "*"
-ios_chr = "*"
-ios_saf = "*"
-op_mini = "*"
-op_mob = "*"
 opera = "*"
+op_mob = "*"
+op_mini = "*"
 safari = "*"
+ios_saf = "*"
 samsung_mob = "*"

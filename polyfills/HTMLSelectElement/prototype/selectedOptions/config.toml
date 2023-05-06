@@ -2,13 +2,9 @@
 aliases = []
 
 #### Dependencies
-dependencies = [
-	"Object.defineProperty",
-	"document.querySelector"
-]
+dependencies = [ ]
 
 notes = [
-	"Polyfill requires Object getters so fails in IE < 8",
 	"Polyfill does not return a live HTMLCollection, only a static NodeList that has the same methods as an HTMLCollection",
 ]
 
@@ -23,16 +19,15 @@ license = "MIT"
 
 #### Browser compatibility
 [browsers]
-android = "<38"
+android = "*"
 bb = "*"
 chrome = "<19"
 firefox = "<26"
-ios_chr = "<6"
-ios_saf = "<6"
-ie = "9 - *"
-ie_mob = "9 - *"
+firefox_mob = "<26"
+ie = ">=9"
+ie_mob = ">=9"
 opera = "<9"
 op_mini = "<10.1"
-safari = "<6"
-firefox_mob = "<26"
+safari = "<6.0"
+ios_saf = "<6.0"
 samsung_mob = "<1.5"

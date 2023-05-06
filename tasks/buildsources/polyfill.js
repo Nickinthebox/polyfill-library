@@ -1,9 +1,8 @@
 'use strict';
 
-const fs = require('graceful-fs');
+const fs = require('fs');
 const path = require('path');
 const uglify = require('uglify-js');
-const makeDirectory = require('mkdirp');
 const {
 	promisify
 } = require('util');
@@ -16,6 +15,10 @@ const readFile = promisify(fs.readFile);
 
 const validateSource = require('./validate-source');
 const semver = require('semver');
+
+const uaBaselines = UA.getBaselines();
+delete uaBaselines.ios_chr; // https://github.com/Financial-Times/polyfill-library/issues/1202#issuecomment-1193403165
+const supportedBrowsers = Object.keys(uaBaselines).sort((a, b) => a.localeCompare(b));
 
 /**
  * Polyfill represents a single polyfill directory.
@@ -151,13 +154,10 @@ module.exports = class Polyfill {
 				this.config = TOML.parse(data);
 
 				// Each internal polyfill needs to target all supported browsers at all versions.
-				if (this.path.relative.startsWith('_')) {
-					const supportedBrowsers = Object.keys(UA.getBaselines()).sort((a, b) => a.localeCompare(b));
-					if (!supportedBrowsers.every(browser => this.config.browsers[browser] === "*")) {
-						const browserSupport = {};
-						for (const browser of supportedBrowsers)  browserSupport[browser] = "*";
-						throw new Error("Internal polyfill called " + this.name + " is not targeting all supported browsers correctly. It should be: \n" + TOML.stringify(browserSupport));
-					}
+				if (this.path.relative.startsWith('_') && !supportedBrowsers.every(browser => this.config.browsers[browser] === "*")) {
+					const browserSupport = {};
+					for (const browser of supportedBrowsers)  browserSupport[browser] = "*";
+					throw new Error("Internal polyfill called " + this.name + " is not targeting all supported browsers correctly. It should be: \n" + TOML.stringify(browserSupport));
 				}
 
 				if (this.config.browsers) {
@@ -271,14 +271,10 @@ module.exports = class Polyfill {
 			const minified = uglify.minify(source, {
 				fromString: true,
 				compress: {
-					screw_ie8: false,
 					keep_fnames: true
 				},
-				mangle: {
-					screw_ie8: false
-				},
+				mangle: {},
 				output: {
-					screw_ie8: false,
 					beautify: false
 				}
 			});
@@ -314,15 +310,11 @@ module.exports = class Polyfill {
 			const minified = uglify.minify(source, {
 				fromString: true,
 				compress: {
-					screw_ie8: false,
 					expression: true,
 					keep_fnames: true
 				},
-				mangle: {
-					screw_ie8: false
-				},
+				mangle: {},
 				output: {
-					screw_ie8: false,
 					beautify: false,
 					semicolons: false
 				}
@@ -364,9 +356,10 @@ module.exports = class Polyfill {
 			['min.js', this.sources.min]
 		];
 
-		return makeDirectory(destination)
-			.then(() => Promise.all(files
-				.map(([name, contents]) => [path.join(destination, name), contents])
-				.map(([path, contents]) => writeFile(path, contents))));
+		fs.mkdirSync(destination, { recursive: true });
+
+		return Promise.all(files
+			.map(([name, contents]) => [path.join(destination, name), contents])
+			.map(([path, contents]) => writeFile(path, contents)));
 	}
 }
